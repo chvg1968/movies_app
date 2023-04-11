@@ -55,11 +55,11 @@ function displayMovieDetails(movie) {
     </div>
     <div>
       <h2 class="modal-title">${movie.title}</h2>
-      <p class="modal-info">Vote Count: ${movie.vote_average} | ${movie.vote_count}<br>Popularity: ${
-      movie.popularity
-    }<br>Original Title: ${movie.original_title}<br>Genre: ${getGenres(
-      movie.genre_ids
-    )}</p>
+      <p class="modal-info">Vote Count: ${movie.vote_average} | ${
+    movie.vote_count
+  }<br>Popularity: ${movie.popularity}<br>Original Title: ${
+    movie.original_title
+  }<br>Genre: ${getGenres(movie.genre_ids)}</p>
       <p class="modal-about"><b>ABOUT</b><br>${movie.overview}</p>
       <div class="modal-buttons">
         <button class="watch-btn">ADD TO WATCHED</button>
@@ -127,4 +127,103 @@ function saveMovie(movie, listName) {
   const savedMovies = JSON.parse(localStorage.getItem(storageKey)) || [];
   savedMovies.push(movie);
   localStorage.setItem(storageKey, JSON.stringify(savedMovies));
+}
+
+// ChatGpt
+
+const openaiApiKey = "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";
+const movieKeywords = ["movie", "movies", "film", "films"];
+const p = document.getElementById('my-paragraph');
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  p.innerHTML = '';
+  const prompt = input.value.toLowerCase();
+  
+  const moviePrompt = movieKeywords.some((keyword) => prompt.includes(keyword));
+
+  if (moviePrompt) {
+    const options = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      temperature: 0.1,
+      body: JSON.stringify({
+        model: "text-davinci-003",
+        prompt: prompt,
+        max_tokens: prompt.length * 5, // Adjust dynamically based on length of input
+      }),
+    };
+
+    try {
+      const response = await fetch(
+        "https://api.openai.com/v1/completions",
+        options
+      );
+      //display first the answer
+      const data = await response.json();
+      const p = document.createElement("p");
+      if (data.choices && data.choices[0] && data.choices[0].text) {
+        p.textContent = data.choices[0].text.trim();
+      } else {
+        p.textContent = "Sorry, no text found";
+      }
+      document.getElementById("my-paragraph").appendChild(p);
+
+      //continues with select movies to show
+      if (data.choices && data.choices.length > 0) {
+        const movieTitle = data.choices[0].text
+          .split("\n")
+          .slice(2)
+          .map((line) => {
+            const parts = line.split(". ");
+            return parts.length > 1
+              ? parts.slice(1).join(". ").split(" (")[0].trim()
+              : null;
+          })
+          .filter((title) => title !== null);
+        if (movieTitle.length > 0) {
+          searchMovies2(movieTitle.join(", "));
+        } else {
+          console.log("No movie titles found in response");
+        }
+      } else {
+        console.log("No choices found in response");
+      }
+    } catch (error) {
+      console.error(error);
+      // Show user-friendly error message or retry the API call
+    }
+  } else {
+    console.log("Not a movie-related prompt");
+  } // Provide feedback to user or handle input different
+});
+
+function searchMovies2(movieTitle) {
+  // Ensure movieTitle is an array
+  console.log("hola3");
+  const titles = Array.isArray(movieTitle)
+    ? movieTitle
+    : movieTitle.split(",").map((title) => title.trim());
+
+  // Map over each title to fetch the movie data
+  const promises = titles.map((title) =>
+    fetch(
+      `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${title}`
+    )
+      .then((response) => response.json())
+      .then((data) => data.results[0])
+      .catch((error) => console.error(error))
+  );
+
+  // Use Promise.all to wait for all requests to complete before displaying movies
+  Promise.all(promises)
+    .then((results) => {
+      // Filter out any undefined results
+      const movies = results.filter((movie) => movie !== undefined);
+      displayMovies(movies);
+    })
+    .catch((error) => console.error(error));
 }

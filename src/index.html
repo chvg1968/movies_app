@@ -9,17 +9,20 @@
   <body>
     <header>
       <h1>Movie Search</h1>
+      
       <form>
         <input type="text" placeholder="Search Movies...">
-        <button type="submit">Search</button>
+        <button id="submit" type="submit">Search</button>
       </form>
+      <a href="./my-library.html"><h1>MY LIBRARY</h1></a>
+      
     </header>
     <main>
+      <div id="my-paragraph"></div>
       <div id="movie-cards"></div>
-      <div class="modal">        
-        </div>
-      </div>
+      <div class="modal"></div>
+      <!-- <div id="movie-list"></div> -->
     </main>
-    <script src="./app.js"></script>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
