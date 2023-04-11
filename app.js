@@ -131,7 +131,7 @@ function saveMovie(movie, listName) {
 
 // ChatGpt
 
-const openaiApiKey = "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";
+const openaiApiKey = "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";
 const movieKeywords = ["movie", "movies", "film", "films"];
 const p = document.getElementById('my-paragraph');
 
